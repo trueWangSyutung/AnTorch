@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AnTorch · Android 端 PyTorch 风格训练框架</title>
+  <meta name="description" content="AnTorch：Android 上可训练的 PyTorch 风格深度学习库，支持 FLOAT16/INT8/INT32/INT64、MLP/CNN/Transformer、JNI + OpenMP 与真实小数据集 Demo。">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">An<span>Torch</span></div>
+    <nav class="nav">
+      <a href="#features">能力</a>
+      <a href="#demo">Demo</a>
+      <a href="#start">快速开始</a>
+      <a href="#datasets">数据</a>
+      <a href="#jni">JNI</a>
+      <a href="https://github.com/trueWangSyutung/AnTorch">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Android-first · PyTorch-style</div>
+        <h1>手机上的<br>深度学习训练框架</h1>
+        <p class="lead">
+          AnTorch 用 Kotlin 实现 Tensor、自动微分、模型与优化器，用 C++/JNI + OpenMP
+          加速核心 kernel。支持 FLOAT16/INT8/INT32/INT64，内置 MLP、CNN、Transformer，
+          并在设备本地完成训练、保存与用户输入推理。
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/trueWangSyutung/AnTorch/releases/latest">下载 Demo APK</a>
+          <a class="btn ghost" href="https://github.com/trueWangSyutung/AnTorch">查看源码</a>
+        </div>
+        <div class="badges">
+          <span class="badge">Android 26+</span>
+          <span class="badge">Kotlin 2.2</span>
+          <span class="badge">JNI + OpenMP</span>
+          <span class="badge">MNIST · Iris · SMS</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <img src="assets/antorch-mnist.png" alt="AnTorch Demo: real MNIST train/test accuracy">
+        <p>真实 MNIST：800 张训练 / 200 张 held-out 测试，4 epochs 后 test accuracy 90.5%。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>从 Tensor 到完整训练闭环</h2>
+      <p class="sub">M1–M9 全部可运行；JNI 不可用时自动回退 Kotlin，JVM 单测与 Android 共用一套 API。</p>
+      <div class="grid three">
+        <div class="card"><span class="tag">CORE</span><h3>类型化 Tensor</h3><p>FLOAT16/FLOAT32/INT8/INT32/INT64，reshape、转置、广播、matmul，动态计算图反向传播。</p></div>
+        <div class="card"><span class="tag">NN</span><h3>常见模型</h3><p>Linear、Conv2d、LayerNorm、Embedding、MultiHeadAttention、TransformerBlock，以及 MLP/CNN/MNIST/Transformer 模型库。</p></div>
+        <div class="card"><span class="tag">OPT</span><h3>现代优化器</h3><p>SGD、Adam、AdamW、RMSprop、Adagrad、Adamax、Lion；Step/Exponential/Cosine 调度器。</p></div>
+        <div class="card"><span class="tag">LOSS</span><h3>更多损失函数</h3><p>MSE、CrossEntropy、BCEWithLogits、Huber、SmoothL1、Focal、NLL、LabelSmoothing。</p></div>
+        <div class="card"><span class="tag">JNI</span><h3>OpenMP 原生 kernel</h3><p>matmul、逐元素、转置、ReLU/Sigmoid/Tanh、softmax、sum、Conv2d 全部走 JNI；Kotlin 自动回退。</p></div>
+        <div class="card"><span class="tag">ANDROID</span><h3>训练到推理</h3><p>协程 Trainer、检查点、ModelIO v2；Demo 支持手写数字画布与短信文本输入，直接调用训练后的模型。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="wrap">
+      <h2>一个 APK，完整 Demo</h2>
+      <p class="sub">M1 自动微分、M2 Iris、M3 保存/加载、M4 MNIST、M5 JNI、M6 基准、M7 SMS Transformer、M8 held-out、M9 模型库。</p>
+      <div class="grid two">
+        <div class="card">
+          <span class="tag">REAL DATA</span>
+          <h3>真实小数据集，不是玩具</h3>
+          <p>Iris 150 条、MNIST 2,000 训练 + 500 测试、SMS Spam 1,200 条。训练与测试分开，界面直接显示 held-out accuracy。</p>
+        </div>
+        <div class="card">
+          <span class="tag">INFERENCE</span>
+          <h3>用户输入调用模型</h3>
+          <p>在 28×28 画布上写数字，点击预测调用刚训练的 CNN；输入短信文本，调用训练后的 Transformer 判断 spam/ham。</p>
+        </div>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/trueWangSyutung/AnTorch/releases/latest">下载最新 APK</a>
+        <a class="btn ghost" href="https://github.com/trueWangSyutung/AnTorch/blob/main/docs/quickstart.md">阅读文档</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <h2>快速开始</h2>
+      <p class="sub">JitPack 依赖 + 一个训练循环；完整 API 见 GitHub docs。</p>
+      <pre><code>implementation("com.github.trueWangSyutung:AnTorch:0.1.0")</code></pre>
+      <pre><code>val model = Sequential(
+    Linear(784, 128), ReLU(), Linear(128, 10)
+)
+val optimizer = Adam(model.parameters, learningRate = 1e-3f)
+
+Trainer.train(
+    model = model,
+    dataset = mnist,
+    loss = CrossEntropyLoss(),
+    optimizer = optimizer,
+    config = TrainConfig(epochs = 4, batchSize = 32)
+) { stats ->
+    println("epoch=${stats.epoch} loss=${stats.loss} acc=${stats.accuracy}")
+}</code></pre>
+      <div class="copy">训练参数默认 FLOAT32；INT32/INT64 用于标签与 token，FLOAT16/INT8 用于推理/量化实验。</div>
+    </div>
+  </section>
+
+  <section id="datasets">
+    <div class="wrap">
+      <h2>真实数据集</h2>
+      <table>
+        <thead><tr><th>数据集</th><th>用途</th><th>规模</th></tr></thead>
+        <tbody>
+          <tr><td>Iris</td><td>表格分类</td><td>150 行 · 4 特征 · 3 类</td></tr>
+          <tr><td>MNIST</td><td>手写数字</td><td>2,000 训练 + 500 测试 · 28×28</td></tr>
+          <tr><td>SMS Spam</td><td>文本分类</td><td>1,200 条 · 161 spam</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="margin-top:14px">数据来源与许可见 <a href="https://github.com/trueWangSyutung/AnTorch/blob/main/datasets/README.md">datasets/README.md</a>。</p>
+    </div>
+  </section>
+
+  <section id="jni">
+    <div class="wrap">
+      <h2>JNI + OpenMP</h2>
+      <p class="sub">大多数热点算子使用 C++17 实现，OpenMP 并行；Tensor 在 FLOAT32 且规模足够时自动走原生路径。</p>
+      <div class="grid three">
+        <div class="card"><h3>矩阵与逐元素</h3><p>matmul、add/sub/mul/div、scalar、transpose。</p></div>
+        <div class="card"><h3>激活与归一化</h3><p>relu、sigmoid、tanh、softmax、sum。</p></div>
+        <div class="card"><h3>卷积</h3><p>Conv2d 前向，OpenMP collapse 并行。</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    AnTorch · Apache-2.0 · <a href="https://github.com/trueWangSyutung/AnTorch">GitHub</a> ·
+    <a href="https://github.com/trueWangSyutung/AnTorch/releases">Releases</a>
+  </div>
+</footer>
+</body>
+</html>
