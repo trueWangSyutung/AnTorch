@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnTorch API Reference</title><link rel="stylesheet" href="assets/style.css">
+<style>.doc{max-width:980px;margin:0 auto;padding:36px 24px 70px}.doc h1{font-size:38px}.doc h2{margin-top:42px;border-top:1px solid var(--line);padding-top:26px}.doc h3{margin-top:26px}.doc pre{font-size:12.5px}.doc table{display:block;overflow:auto;margin:14px 0}.doc p,.doc li{color:#334155}.doc code{background:#eef2f7;padding:2px 5px;border-radius:5px;font-size:90%}.doc pre code{background:transparent;padding:0}</style>
+</head><body><header class="topbar"><div class="wrap"><a class="brand" href="index.html">An<span>Torch</span></a><nav class="nav"><a href="index.html#features">能力</a><a href="index.html#demo">Demo</a><a href="index.html#start">快速开始</a><a href="https://github.com/trueWangSyutung/AnTorch">GitHub</a></nav></div></header><main class="doc"><h1 id="api-reference">API Reference</h1>
+<p>AnTorch 0.1.0 · package root <code>cn.ac.oac.libs.antorch</code>.</p>
+<p>All public APIs are annotated with <code>@AnTorchApi</code>; experimental APIs use
+<code>@ExperimentalAnTorch</code> and native kernels use <code>@NativeAccelerated</code>.</p>
+<hr />
+<h2 id="1-annotations">1. Annotations</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.annotation</code>.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enum ApiStability</code></td>
+<td><code>STABLE</code>, <code>EXPERIMENTAL</code>, <code>DEPRECATED</code>, <code>INTERNAL</code>.</td>
+</tr>
+<tr>
+<td><code>@AnTorchApi(stability, since, note)</code></td>
+<td>Public API stability and introduction version. Target: class, function, property.</td>
+</tr>
+<tr>
+<td><code>@ExperimentalAnTorch(note)</code></td>
+<td>Experimental API; may change between minor versions.</td>
+</tr>
+<tr>
+<td><code>@InternalAnTorch</code></td>
+<td>Internal implementation detail; not a compatibility contract.</td>
+</tr>
+<tr>
+<td><code>@NativeAccelerated(fallback)</code></td>
+<td>Marks a JNI/OpenMP kernel and its Kotlin fallback.</td>
+</tr>
+<tr>
+<td><code>@AnTorchFunction(name, description, differentiable)</code></td>
+<td>Marks a custom autograd function.</td>
+</tr>
+<tr>
+<td><code>@RegisterLayer(name)</code></td>
+<td>Marks a custom layer for the registry.</td>
+</tr>
+<tr>
+<td><code>@RegisterOptimizer(name)</code></td>
+<td>Marks a custom optimizer.</td>
+</tr>
+<tr>
+<td><code>@RegisterLoss(name)</code></td>
+<td>Marks a custom loss.</td>
+</tr>
+<tr>
+<td><code>object AnTorchRegistry</code></td>
+<td>Runtime registry: <code>registerLayer</code>, <code>registerOptimizer</code>, <code>registerLoss</code>, <code>create(kind, name, config)</code>, <code>names(kind)</code>, <code>clear()</code>.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">AnTorchRegistry.registerLayer(&quot;linear&quot;) { config -&gt;
+    Linear(config[&quot;in&quot;] as Int, config[&quot;out&quot;] as Int)
+}
+val layer = AnTorchRegistry.create(&quot;layer&quot;, &quot;linear&quot;, mapOf(&quot;in&quot; to 4, &quot;out&quot; to 2))
+</code></pre>
+<hr />
+<h2 id="2-core">2. Core</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.core</code>.</p>
+<h3 id="21-dtype">2.1 <code>DType</code></h3>
+<p><code>FLOAT16</code>, <code>FLOAT32</code>, <code>INT8</code>, <code>INT32</code>, <code>INT64</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bytes</code></td>
+<td>Storage bytes per element.</td>
+</tr>
+<tr>
+<td><code>isFloating</code></td>
+<td><code>FLOAT16</code> or <code>FLOAT32</code>.</td>
+</tr>
+<tr>
+<td><code>isInteger</code></td>
+<td><code>INT8</code>, <code>INT32</code>, <code>INT64</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>FLOAT32</code> is the default training dtype. Only <code>FLOAT32</code> tensors support <code>requiresGrad</code>.
+Arithmetic promotes results to <code>FLOAT32</code>.</p>
+<h3 id="22-tensor">2.2 <code>Tensor</code></h3>
+<pre><code class="language-kotlin">Tensor(data: FloatArray, shape: IntArray, requiresGrad: Boolean = false)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data: FloatArray</code></td>
+<td>Compute view. For non-FLOAT32 tensors, values are converted/cached as floats.</td>
+</tr>
+<tr>
+<td><code>shape: IntArray</code></td>
+<td>Row-major shape.</td>
+</tr>
+<tr>
+<td><code>dtype: DType</code></td>
+<td>Storage dtype.</td>
+</tr>
+<tr>
+<td><code>requiresGrad: Boolean</code></td>
+<td>Enables autograd (FLOAT32 only).</td>
+</tr>
+<tr>
+<td><code>grad: Tensor?</code></td>
+<td>Accumulated gradient after <code>backward()</code>.</td>
+</tr>
+<tr>
+<td><code>ndim</code>, <code>size</code></td>
+<td>Rank and element count.</td>
+</tr>
+<tr>
+<td><code>item(): Float</code></td>
+<td>Value of a single-element tensor.</td>
+</tr>
+<tr>
+<td><code>zeroGrad()</code></td>
+<td>Clears <code>grad</code>.</td>
+</tr>
+<tr>
+<td><code>backward()</code></td>
+<td>Reverse-mode autograd from this tensor.</td>
+</tr>
+<tr>
+<td><code>detach()</code></td>
+<td>Copy without graph/requiresGrad.</td>
+</tr>
+<tr>
+<td><code>copy(requiresGrad)</code></td>
+<td>Copy preserving dtype.</td>
+</tr>
+<tr>
+<td><code>reshape(vararg shape)</code></td>
+<td>View with a new shape; shares storage.</td>
+</tr>
+<tr>
+<td><code>flatten()</code></td>
+<td>1-D view.</td>
+</tr>
+<tr>
+<td><code>transpose()</code></td>
+<td>2-D transpose; returns a copy.</td>
+</tr>
+<tr>
+<td><code>matmul(other)</code></td>
+<td>2-D matrix multiplication.</td>
+</tr>
+<tr>
+<td><code>plus/minus/times/div</code></td>
+<td>Same-shape elementwise ops; <code>+</code> also supports scalar and 2-D+1-D bias.</td>
+</tr>
+<tr>
+<td><code>relu()</code>, <code>sigmoid()</code>, <code>tanh()</code>, <code>softmax()</code></td>
+<td>Activations; <code>softmax</code> requires <code>[batch, classes]</code>.</td>
+</tr>
+<tr>
+<td><code>sum()</code>, <code>mean()</code></td>
+<td>Full reduction to shape <code>[1]</code>.</td>
+</tr>
+<tr>
+<td><code>log()</code></td>
+<td>Natural log.</td>
+</tr>
+<tr>
+<td><code>get(index)</code>, <code>get(vararg indices)</code></td>
+<td>Read a value.</td>
+</tr>
+<tr>
+<td><code>toFloatArray()</code>, <code>toIntArray()</code>, <code>toLongArray()</code></td>
+<td>Typed copies.</td>
+</tr>
+<tr>
+<td><code>astype(dtype)</code></td>
+<td>Convert storage/dtype.</td>
+</tr>
+</tbody>
+</table>
+<p>Companion factories:</p>
+<table>
+<thead>
+<tr>
+<th>Factory</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zeros(*shape)</code>, <code>ones(*shape)</code>, <code>full(value, *shape)</code></td>
+<td>FLOAT32 initialization.</td>
+</tr>
+<tr>
+<td><code>zeros(dtype, *shape)</code>, <code>full(value, dtype, *shape)</code></td>
+<td>Typed initialization.</td>
+</tr>
+<tr>
+<td><code>of(vararg values)</code>, <code>ofType(dtype, vararg values)</code></td>
+<td>1-D factory.</td>
+</tr>
+<tr>
+<td><code>fromArray(data, *shape)</code></td>
+<td>FLOAT32 tensor.</td>
+</tr>
+<tr>
+<td><code>fromArray(data, shape, dtype)</code></td>
+<td>Typed tensor.</td>
+</tr>
+<tr>
+<td><code>fromFloat16Array(ShortArray, *shape)</code></td>
+<td>Raw half bits.</td>
+</tr>
+<tr>
+<td><code>fromInt8Array(IntArray, *shape)</code></td>
+<td>INT8 tensor.</td>
+</tr>
+<tr>
+<td><code>fromInt32Array(IntArray, *shape)</code></td>
+<td>INT32 tensor.</td>
+</tr>
+<tr>
+<td><code>fromLongArray(LongArray, *shape)</code></td>
+<td>INT64 tensor.</td>
+</tr>
+<tr>
+<td><code>fromValues(data, dtype, *shape)</code></td>
+<td>Convert float values into a dtype.</td>
+</tr>
+<tr>
+<td><code>randn(*shape, seed)</code></td>
+<td>Normal random tensor.</td>
+</tr>
+<tr>
+<td><code>arange(start, end, step)</code></td>
+<td>1-D range.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">val x = Tensor.fromLongArray(longArrayOf(1, 2, 3), 3)
+val f = x.astype(DType.FLOAT32)
+val logits = Tensor.randn(4, 10, seed = 42)
+</code></pre>
+<h3 id="23-parameter">2.3 <code>Parameter</code></h3>
+<p><code>Parameter(data: FloatArray, shape: IntArray)</code> or <code>Parameter(vararg shape: Int)</code>.
+A <code>Tensor</code> with <code>requiresGrad = true</code>; used by modules/optimizers.</p>
+<h3 id="24-nativeops">2.4 <code>NativeOps</code></h3>
+<p>Package <code>cn.ac.oac.libs.antorch.core</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>available: Boolean</code></td>
+<td>Whether <code>libantorch_native</code> loaded.</td>
+</tr>
+<tr>
+<td><code>matmul(a,b,m,k,n)</code></td>
+<td>Float matrix multiply.</td>
+</tr>
+<tr>
+<td><code>add/sub/mul/div(a,b)</code></td>
+<td>Elementwise float arrays.</td>
+</tr>
+<tr>
+<td><code>addScalar/mulScalar(input,value)</code></td>
+<td>Scalar ops.</td>
+</tr>
+<tr>
+<td><code>transpose(input,rows,cols)</code></td>
+<td>2-D transpose.</td>
+</tr>
+<tr>
+<td><code>relu/sigmoid/tanh(input)</code></td>
+<td>Activations.</td>
+</tr>
+<tr>
+<td><code>softmaxRows(input,rows,cols)</code></td>
+<td>Row softmax.</td>
+</tr>
+<tr>
+<td><code>sum(input)</code></td>
+<td>Sum.</td>
+</tr>
+<tr>
+<td><code>conv2d(input,weight,bias,N,C,H,W,O,K)</code></td>
+<td>Valid 3×3/ K×K convolution.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-neural-networks">3. Neural networks</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.nn</code>.</p>
+<h3 id="31-module">3.1 <code>Module</code></h3>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>training</code></td>
+<td>Training/eval flag.</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td>Parameters owned by this module.</td>
+</tr>
+<tr>
+<td><code>forward(input)</code></td>
+<td>Abstract forward.</td>
+</tr>
+<tr>
+<td><code>invoke(input)</code></td>
+<td>Alias for <code>forward</code>.</td>
+</tr>
+<tr>
+<td><code>train()/eval()</code></td>
+<td>Switch mode recursively where implemented.</td>
+</tr>
+<tr>
+<td><code>stateDict(prefix)</code></td>
+<td>Named parameter map for serialization.</td>
+</tr>
+<tr>
+<td><code>loadStateDict(state, prefix)</code></td>
+<td>Copy values into existing parameters.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-layers">3.2 Layers</h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Signature / Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Sequential(vararg modules)</code></td>
+<td>Chains modules; flattens parameters and state dict.</td>
+</tr>
+<tr>
+<td><code>Linear(inFeatures, outFeatures)</code></td>
+<td><code>x @ Wᵀ + b</code>; supports N-D input with last dim <code>inFeatures</code>.</td>
+</tr>
+<tr>
+<td><code>ReLU</code>, <code>Sigmoid</code>, <code>Tanh</code></td>
+<td>Elementwise activations.</td>
+</tr>
+<tr>
+<td><code>Flatten</code></td>
+<td><code>[N, ...] → [N, product]</code>.</td>
+</tr>
+<tr>
+<td><code>Dropout(probability = 0.5f)</code></td>
+<td>Inverted dropout; only in training mode.</td>
+</tr>
+<tr>
+<td><code>Conv2d(inChannels, outChannels, kernelSize, stride=1, padding=0)</code></td>
+<td>2-D convolution; first version requires stride=1, padding=0.</td>
+</tr>
+<tr>
+<td><code>GELU</code></td>
+<td>Tanh approximation.</td>
+</tr>
+<tr>
+<td><code>LayerNorm(features, epsilon=1e-5f)</code></td>
+<td>Normalizes the last dimension; supports N-D input.</td>
+</tr>
+<tr>
+<td><code>Embedding(numEmbeddings, embeddingDim)</code></td>
+<td>Integer <code>[B,S] → [B,S,D]</code>; input must be INT8/INT32/INT64.</td>
+</tr>
+<tr>
+<td><code>PositionalEncoding(maxSeq, dim)</code></td>
+<td>Learnable additive positional encoding.</td>
+</tr>
+<tr>
+<td><code>MultiHeadAttention(embedDim, heads)</code></td>
+<td>Q/K/V projections + scaled dot-product attention + output projection.</td>
+</tr>
+<tr>
+<td><code>TransformerBlock(dim, heads, ffnDim=dim*4)</code></td>
+<td>Pre-LN attention + FFN with residuals.</td>
+</tr>
+<tr>
+<td><code>SequenceMean</code></td>
+<td>Mean-pools <code>[B,S,D] → [B,D]</code>.</td>
+</tr>
+<tr>
+<td><code>TransformerClassifier(vocabSize,maxSeq,dim,heads,classes,layers=1,ffnDim=dim*4)</code></td>
+<td>Embedding + positional + transformer blocks + mean pool + linear head.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-model-zoo">3.3 Model Zoo</h3>
+<p><code>object ModelZoo</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mlp(input, hidden=128, classes=10)</code></td>
+<td>One hidden layer MLP.</td>
+</tr>
+<tr>
+<td><code>mlp(input, hidden: List&lt;Int&gt;, classes, activation)</code></td>
+<td>Configurable MLP.</td>
+</tr>
+<tr>
+<td><code>cnn(inChannels, imageSize, classes, channels=8)</code></td>
+<td>Conv 3×3 + ReLU + flatten + linear.</td>
+</tr>
+<tr>
+<td><code>mnistMlp(hidden=128)</code></td>
+<td><code>[N,1,28,28] → 10</code> MLP.</td>
+</tr>
+<tr>
+<td><code>mnistCnn(channels=8)</code></td>
+<td><code>[N,1,28,28] → 10</code> CNN.</td>
+</tr>
+<tr>
+<td><code>transformer(vocabSize,maxSeq,dim,heads,classes,layers,ffnDim)</code></td>
+<td>Transformer classifier.</td>
+</tr>
+<tr>
+<td><code>tinyTransformer(vocabSize,maxSeq=8,classes=2)</code></td>
+<td>Small demo Transformer.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-losses">3.4 Losses</h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MSELoss</code></td>
+<td>Mean squared error; same-shape input/target.</td>
+</tr>
+<tr>
+<td><code>CrossEntropyLoss</code></td>
+<td>Logits <code>[N,C]</code> + integer labels <code>[N]</code>; stable softmax + NLL.</td>
+</tr>
+<tr>
+<td><code>BCEWithLogitsLoss</code></td>
+<td>Stable binary cross entropy from logits; same shape or <code>[N,1]</code> vs <code>[N]</code>.</td>
+</tr>
+<tr>
+<td><code>HuberLoss(delta=1f)</code></td>
+<td>Quadratic near zero, linear outside.</td>
+</tr>
+<tr>
+<td><code>SmoothL1Loss(beta=1f)</code></td>
+<td>Alias of Huber behavior.</td>
+</tr>
+<tr>
+<td><code>FocalLoss(alpha=0.25f, gamma=2f)</code></td>
+<td>Class-balanced focal loss; integer labels.</td>
+</tr>
+<tr>
+<td><code>NLLLoss</code></td>
+<td>Negative log likelihood; input must be log-probabilities.</td>
+</tr>
+<tr>
+<td><code>LabelSmoothingCrossEntropy(smoothing=0.1f)</code></td>
+<td>CE with uniform label smoothing.</td>
+</tr>
+</tbody>
+</table>
+<p>All losses return a scalar tensor and implement <code>backward</code>.</p>
+<hr />
+<h2 id="4-optimizers">4. Optimizers</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.optim</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Key arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Optimizer(parameters, learningRate)</code></td>
+<td>base</td>
+<td><code>step()</code>, <code>zeroGrad()</code>.</td>
+</tr>
+<tr>
+<td><code>SGD</code></td>
+<td><code>momentum</code>, <code>weightDecay</code></td>
+<td>Stochastic gradient descent with optional momentum.</td>
+</tr>
+<tr>
+<td><code>Adam</code></td>
+<td><code>beta1</code>, <code>beta2</code>, <code>epsilon</code>, <code>weightDecay</code></td>
+<td>Adam.</td>
+</tr>
+<tr>
+<td><code>AdamW</code></td>
+<td><code>beta1</code>, <code>beta2</code>, <code>epsilon</code>, <code>weightDecay</code></td>
+<td>Decoupled weight decay Adam.</td>
+</tr>
+<tr>
+<td><code>RMSprop</code></td>
+<td><code>alpha</code>, <code>epsilon</code>, <code>weightDecay</code></td>
+<td>RMS propagation.</td>
+</tr>
+<tr>
+<td><code>Adagrad</code></td>
+<td><code>epsilon</code>, <code>weightDecay</code></td>
+<td>Adaptive gradient.</td>
+</tr>
+<tr>
+<td><code>Adamax</code></td>
+<td><code>beta1</code>, <code>beta2</code>, <code>epsilon</code></td>
+<td>Infinity-norm Adam variant.</td>
+</tr>
+<tr>
+<td><code>Lion</code></td>
+<td><code>beta1</code>, <code>beta2</code>, <code>weightDecay</code></td>
+<td>Sign-momentum optimizer.</td>
+</tr>
+<tr>
+<td><code>StepLR(optimizer, stepSize, gamma)</code></td>
+<td></td>
+<td>Multiply LR every N steps.</td>
+</tr>
+<tr>
+<td><code>ExponentialLR(optimizer, gamma)</code></td>
+<td></td>
+<td>Multiply LR each <code>step()</code>.</td>
+</tr>
+<tr>
+<td><code>CosineAnnealingLR(optimizer, maxEpochs, minLR)</code></td>
+<td></td>
+<td>Cosine schedule.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">val optimizer = AdamW(model.parameters, learningRate = 1e-3f, weightDecay = 0.01f)
+optimizer.zeroGrad()
+loss.backward()
+optimizer.step()
+</code></pre>
+<hr />
+<h2 id="5-data">5. Data</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.data</code>.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Sample(x, y)</code></td>
+<td>One input/label pair.</td>
+</tr>
+<tr>
+<td><code>Batch(x, y)</code></td>
+<td>Batched tensors.</td>
+</tr>
+<tr>
+<td><code>Dataset</code></td>
+<td><code>size</code>, <code>get(index)</code>.</td>
+</tr>
+<tr>
+<td><code>TensorDataset(x, y)</code></td>
+<td>Tensor-backed dataset; first dimension is sample count.</td>
+</tr>
+<tr>
+<td><code>SubsetDataset(source, indices)</code></td>
+<td>Indexed subset (train/test split).</td>
+</tr>
+<tr>
+<td><code>DataLoader(dataset, batchSize=32, shuffle=true, seed=42)</code></td>
+<td>Iterable batches; preserves dtype.</td>
+</tr>
+<tr>
+<td><code>Datasets.xor()</code></td>
+<td>4-sample XOR.</td>
+</tr>
+<tr>
+<td><code>Datasets.spiral(samplesPerClass, noise, seed)</code></td>
+<td>Synthetic 2-D spiral.</td>
+</tr>
+<tr>
+<td><code>Datasets.bars(samples, noise, seed)</code></td>
+<td>8×8 bar images.</td>
+</tr>
+<tr>
+<td><code>Datasets.mnistLike(samples, noise, seed)</code></td>
+<td>28×28 synthetic MNIST-shaped images.</td>
+</tr>
+<tr>
+<td><code>Datasets.sequences(samples, vocab, length, seed)</code></td>
+<td>Token sequences for Transformer tests.</td>
+</tr>
+<tr>
+<td><code>RealDatasets.iris(input)</code></td>
+<td>Real Iris CSV, standardized, 150×4, 3 classes.</td>
+</tr>
+<tr>
+<td><code>RealDatasets.mnist(images, labels, limit)</code></td>
+<td>IDX loader, <code>[N,1,28,28]</code> normalized, INT32 labels.</td>
+</tr>
+<tr>
+<td><code>RealDatasets.sms(input, maxLength=32, vocabSize=2000)</code></td>
+<td>SMS spam TSV; returns <code>TextDataset</code>.</td>
+</tr>
+<tr>
+<td><code>RealDatasets.TextDataset</code></td>
+<td><code>dataset</code>, <code>vocabulary</code>, <code>maxLength</code>, <code>encode(text): Tensor</code>.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">val (train, test) = split(iris, 0.8, seed = 7)
+val loader = DataLoader(train, batchSize = 16)
+for (batch in loader) {
+    val logits = model(batch.x)
+    val loss = CrossEntropyLoss()(logits, batch.y)
+}
+</code></pre>
+<hr />
+<h2 id="6-serialization">6. Serialization</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.serialization</code>.</p>
+<p><code>object ModelIO</code> (format v2, dtype-aware):</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>save(model, file)</code></td>
+<td>Write magic/version/state dict with dtype.</td>
+</tr>
+<tr>
+<td><code>load(model, file)</code></td>
+<td>Read and copy into an existing model; shape checks.</td>
+</tr>
+<tr>
+<td><code>saveCheckpoint(model, epoch, loss, file)</code></td>
+<td>Save weights + <code>epoch/loss</code> sidecar metadata.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">ModelIO.save(model, File(context.filesDir, &quot;mnist.antorch&quot;))
+val restored = ModelZoo.mnistCnn(4)
+ModelIO.load(restored, File(context.filesDir, &quot;mnist.antorch&quot;))
+</code></pre>
+<hr />
+<h2 id="7-android-training">7. Android training</h2>
+<p>Package <code>cn.ac.oac.libs.antorch.android</code>.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TrainConfig(epochs, batchSize, shuffle, checkpointEvery, checkpointFile)</code></td>
+<td>Training loop configuration.</td>
+</tr>
+<tr>
+<td><code>EpochStats(epoch, loss, accuracy, elapsedMs)</code></td>
+<td>Per-epoch result.</td>
+</tr>
+<tr>
+<td><code>Trainer.train(model, dataset, loss, optimizer, config, onEpoch)</code></td>
+<td>Suspending training loop on <code>Dispatchers.Default</code>.</td>
+</tr>
+<tr>
+<td><code>AnTorch.VERSION</code>, <code>AnTorch.init()</code>, <code>AnTorch.isInitialized()</code></td>
+<td>Library metadata/initialization.</td>
+</tr>
+<tr>
+<td><code>Tensor.argmaxRows()</code></td>
+<td>Per-row argmax for <code>[N,C]</code>.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-kotlin">val history = Trainer.train(
+    model, trainSet, CrossEntropyLoss(), Adam(model.parameters),
+    TrainConfig(epochs = 4, batchSize = 32)
+) { stats -&gt; Log.i(&quot;AnTorch&quot;, &quot;epoch=${stats.epoch} loss=${stats.loss}&quot;) }
+</code></pre>
+<hr />
+<h2 id="8-package-map">8. Package map</h2>
+<pre><code class="language-text">core/           DType, Tensor, Parameter, NativeOps
+nn/             Module, layers, losses, Transformer, ModelZoo
+optim/          optimizers and schedulers
+data/           datasets, loaders, real data
+serialization/  ModelIO
+android/        Trainer and metadata
+annotation/     API annotations and registry
+cpp/            JNI + OpenMP kernels
+</code></pre></main><footer><div class="wrap">AnTorch · Apache-2.0 · <a href="https://github.com/trueWangSyutung/AnTorch">GitHub</a></div></footer></body></html>

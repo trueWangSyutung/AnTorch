@@ -120,6 +120,7 @@ Requirements: JDK 21, Android SDK 36, NDK 27+, minSdk 26.
 - [GitHub Pages](https://truewangsyutung.github.io/AnTorch/)
 - [Quick start](docs/quickstart.md)
 - [Architecture](docs/architecture.md)
+- [API reference](docs/api.md)
 - [JNI & OpenMP](docs/jni.md)
 - [Datasets](datasets/README.md)
 
