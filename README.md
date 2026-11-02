@@ -25,6 +25,8 @@ small datasets, and a runnable Compose demo.
 
 ## Demo
 
+![AnTorch MNIST demo](docs/assets/images/antorch-mnist.png)
+
 The demo is a single runnable app with **M1–M9** and interactive inference:
 
 - M1 autograd / XOR

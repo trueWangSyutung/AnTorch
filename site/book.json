@@ -1,0 +1,40 @@
+{
+  "gitbook": "3.2.2",
+  "title": "AnTorch 文档",
+  "description": "Android 端 PyTorch 风格训练框架：API、JNI、数据集与中文技术报告",
+  "author": "AnTorch Engineering",
+  "language": "zh-hans",
+  "root": "./docs",
+  "styles": {
+    "website": "assets/styles/website.css"
+  },
+  "links": {
+    "sidebar": {
+      "GitHub": "https://github.com/trueWangSyutung/AnTorch",
+      "Release 0.1.0": "https://github.com/trueWangSyutung/AnTorch/releases/tag/v0.1.0"
+    }
+  },
+  "plugins": [
+    "-lunr",
+    "-search",
+    "-highlight",
+    "-livereload",
+    "search-plus@^0.0.11",
+    "prism@^2.1.0",
+    "prism-themes@^0.0.2",
+    "anchors@^0.7.1",
+    "expandable-chapters-small@^0.1.7",
+    "simple-page-toc@^0.1.1",
+    "tbfed-pagefooter@^0.0.1",
+    "github-buttons@2.1.0",
+    "favicon@^0.0.2"
+  ],
+  "pluginsConfig": {
+    "theme-default": { "showLevel": true },
+    "prism": { "css": ["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"] },
+    "github-buttons": {
+      "buttons": [{ "user": "trueWangSyutung", "repo": "AnTorch", "type": "star", "size": "large" }]
+    },
+    "favicon": { "shortcut": "assets/images/favicon.png" }
+  }
+}

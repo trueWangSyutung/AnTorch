@@ -1,10 +1,14 @@
-name: Deploy GitHub Pages
+name: Deploy GitBook documentation
 
 on:
   push:
     branches: ["main"]
     paths:
+      - "docs/**"
+      - "datasets/**"
       - "site/**"
+      - "README.md"
+      - "CHANGELOG.md"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -18,16 +22,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Node.js 10 (GitBook 3 compatibility)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "10.24.1"
+      - name: Cache GitBook plugins
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gitbook
+            site/node_modules
+          key: gitbook-${{ runner.os }}-${{ hashFiles('site/book.json') }}
+      - uses: actions/configure-pages@v5
+      - name: Install GitBook CLI
+        run: npm install -g gitbook-cli@2.3.2
+      - name: Sync and build documentation
+        working-directory: site
+        run: |
+          python3 scripts/sync_docs.py
+          gitbook install
+          gitbook build . _book
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/_book
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

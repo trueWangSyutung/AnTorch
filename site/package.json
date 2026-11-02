@@ -1,0 +1,11 @@
+{
+  "name": "antorch-docs",
+  "private": true,
+  "description": "AnTorch GitBook documentation",
+  "scripts": {
+    "sync": "python3 scripts/sync_docs.py",
+    "install-plugins": "gitbook install",
+    "build": "npm run sync && gitbook build . _book",
+    "serve": "npm run sync && gitbook serve ."
+  }
+}

@@ -9,3 +9,16 @@ local.properties
 .kotlin/
 .cxx/
 **/.cxx/
+site/node_modules/
+site/_book/
+site/docs/README.md
+site/docs/api.md
+site/docs/quickstart.md
+site/docs/architecture.md
+site/docs/jni.md
+site/docs/gpu.md
+site/docs/models.md
+site/docs/technical-report.md
+site/docs/datasets.md
+site/docs/changelog.md
+.home/
